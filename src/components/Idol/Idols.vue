@@ -24,7 +24,7 @@
                   </div>
                 </v-card-title>
               </v-flex>
-              <v-flex xs4 class="white">
+              <v-flex xs4 class="white" v-if="userIsAuthenticated">
                 <v-card-actions class="pa-0">
                   <v-text-field label="투표수" v-model="votes[index]" class="pb-0" hide-details></v-text-field>
                   <v-btn class="primary" :disabled="!votesAreValid(index)" @click="onVote(index)">투표하기</v-btn>
@@ -51,6 +51,9 @@ export default {
     },
     loading () {
       return this.$store.getters.loading
+    },
+    userIsAuthenticated () {
+      return this.$store.getters.user !== null && this.$store.getters.user !== undefined
     }
   },
   methods: {
