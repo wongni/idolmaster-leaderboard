@@ -15,12 +15,6 @@ export const store = new Vuex.Store({
     setLoadedIdols (state, payload) {
       state.loadedIdols = payload
     },
-    createIdol (state, payload) {
-      state.loadedIdols.push(payload)
-    },
-    deleteIdol (state, payload) {
-      state.loadedIdols = state.loadedIdols.filter(idol => idol.id !== payload.id)
-    },
     updateIdol (state, payload) {
       const idol = state.loadedIdols.find(idol => idol.id === payload.id)
       if (payload.name) {
@@ -78,10 +72,10 @@ export const store = new Vuex.Store({
         commit('setLoadedIdols', idols)
         commit('setLoading', false)
       })
-        // .catch(error => {
-        //   commit('setLoading', false)
-        //   console.log(error)
-        // })
+      // .catch(error => {
+      //   commit('setLoading', false)
+      //   console.log(error)
+      // })
     },
     createIdol ({ commit, getters }, payload) {
       commit('setLoading', true)
@@ -113,11 +107,6 @@ export const store = new Vuex.Store({
           return firebase.database().ref('idols').child(key).update({ imageUrl })
         })
         .then(() => {
-          commit('createIdol', {
-            ...idol,
-            imageUrl,
-            id: key
-          })
           commit('setLoading', false)
         })
         .catch(error => {
@@ -136,6 +125,9 @@ export const store = new Vuex.Store({
       }
       if (payload.numVotes) {
         updateObj.numVotes = payload.numVotes
+      }
+      if (payload.birthDate) {
+        updateObj.birthDate = payload.birthDate
       }
       if (payload.image) {
         firebase.storage().ref(`idols/${payload.id}.image`).put(payload.image)
@@ -170,7 +162,6 @@ export const store = new Vuex.Store({
       firebase.database().ref('idols').child(payload.id).remove()
         .then(() => {
           commit('setLoading', false)
-          commit('deleteIdol', payload)
         })
         .catch(error => {
           console.log(error)

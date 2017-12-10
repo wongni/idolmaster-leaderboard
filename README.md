@@ -1,4 +1,4 @@
-# dev-idols
+# idolmaster-leaderboard
 
 > A Vue.js project
 

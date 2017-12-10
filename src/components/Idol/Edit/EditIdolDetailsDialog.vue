@@ -31,6 +31,8 @@
               <v-text-field name="name" label="이름" id="name" v-model="editedName" hide-details required></v-text-field>
               <v-text-field name="description" label="각오" id="description" v-model="editedDescription" hide-details multi-line></v-text-field>
               <v-text-field name="numVotes" label="득표수" id="numVotes" v-model="editedNumVotes"></v-text-field>
+              <h6>생일을 선택하세요</h6>
+              <v-date-picker v-model="editedBirthDate"></v-date-picker>
             </v-card-text>
           </v-flex>
         </v-layout>
@@ -58,7 +60,8 @@ export default {
       editedDescription: this.idol.description,
       editedImageUrl: this.idol.imageUrl,
       editedImage: null,
-      editedNumVotes: this.idol.numVotes
+      editedNumVotes: this.idol.numVotes,
+      editedBirthDate: new Date(this.idol.birthDate)
     }
   },
   methods: {
@@ -72,7 +75,8 @@ export default {
         name: this.editedName,
         description: this.editedDescription,
         image: this.editedImage,
-        numVotes: parseInt(this.editedNumVotes)
+        numVotes: parseInt(this.editedNumVotes),
+        birthDate: (new Date(this.editedBirthDate) || new Date()).toISOString()
       })
     },
     onPickFile () {

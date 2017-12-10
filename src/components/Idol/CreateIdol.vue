@@ -95,7 +95,7 @@ export default {
       return this.name !== '' && this.imageUrl !== '' && this.numVotes >= 0
     },
     submittableDate () {
-      return new Date(this.date) && new Date()
+      return new Date(this.date) || new Date()
     }
   },
   methods: {
