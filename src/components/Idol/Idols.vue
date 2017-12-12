@@ -1,5 +1,14 @@
 <template>
   <v-container>
+    <v-layout row mb-3>
+      <v-flex xs2 offset-xs4>
+        <v-btn large round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
+        <v-btn large round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
+      </v-flex>
+      <v-flex xs2 offset-xs1>
+        <v-btn large round class="blue" @click="onSort">득표수 정렬</v-btn>
+      </v-flex>
+    </v-layout>
     <v-layout row wrap v-if="loading">
       <v-flex xs12 class="text-xs-center">
         <v-progress-circular indeterminate color="primary" :width="7" :size="70"></v-progress-circular>
@@ -54,6 +63,9 @@ export default {
     },
     userIsAuthenticated () {
       return this.$store.getters.user !== null && this.$store.getters.user !== undefined
+    },
+    isShuffling () {
+      return this.$store.getters.isShufflingIdols
     }
   },
   methods: {
@@ -80,6 +92,15 @@ export default {
         numVotes: this.idols[index].numVotes + newVotes
       })
       this.votes[index] = ''
+    },
+    onStartShuffling () {
+      this.$store.dispatch('startShufflingIdols')
+    },
+    onStopShuffling () {
+      this.$store.dispatch('stopShufflingIdols')
+    },
+    onSort () {
+      this.$store.dispatch('sortIdols')
     }
   }
 }

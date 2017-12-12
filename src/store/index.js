@@ -9,7 +9,9 @@ export const store = new Vuex.Store({
     loadedIdols: [],
     user: null,
     loading: false,
-    error: null
+    error: null,
+    sortingOrder: 'by_vote',
+    shufflingHandler: null
   },
   mutations: {
     setLoadedIdols (state, payload) {
@@ -35,6 +37,19 @@ export const store = new Vuex.Store({
       if (payload.numVotes) {
         idol.numVotes = payload.numVotes
       }
+    },
+    startShufflingIdols (state) {
+      state.shufflingHandler = setInterval(() => {
+        state.sortingOrder = 'by_vote'
+        state.sortingOrder = 'random'
+      }, 50)
+    },
+    stopShufflingIdols (state) {
+      clearInterval(state.shufflingHandler)
+      state.shufflingHandler = null
+    },
+    sortIdols (state) {
+      state.sortingOrder = 'by_vote'
     },
     setUser (state, payload) {
       state.user = payload
@@ -72,10 +87,6 @@ export const store = new Vuex.Store({
         commit('setLoadedIdols', idols)
         commit('setLoading', false)
       })
-      // .catch(error => {
-      //   commit('setLoading', false)
-      //   console.log(error)
-      // })
     },
     createIdol ({ commit, getters }, payload) {
       commit('setLoading', true)
@@ -168,6 +179,15 @@ export const store = new Vuex.Store({
           commit('setLoading', false)
         })
     },
+    startShufflingIdols ({ commit }) {
+      commit('startShufflingIdols')
+    },
+    stopShufflingIdols ({ commit }) {
+      commit('stopShufflingIdols')
+    },
+    sortIdols ({ commit }) {
+      commit('sortIdols')
+    },
     signUserUp ({ commit }, payload) {
       commit('setLoading', true)
       commit('clearError')
@@ -215,7 +235,17 @@ export const store = new Vuex.Store({
   },
   getters: {
     loadedIdols (state) {
-      return state.loadedIdols.sort((idolA, idolB) => idolB.numVotes - idolA.numVotes)
+      if (state.sortingOrder === 'by_vote') {
+        return state.loadedIdols.sort((idolA, idolB) => idolB.numVotes - idolA.numVotes)
+      } else if (state.sortingOrder === 'random') {
+        for (let i = state.loadedIdols.length - 1; i > 0; i--) {
+          let j = Math.floor(Math.random() * (i + 1))
+          const temp = state.loadedIdols[i]
+          state.loadedIdols[i] = state.loadedIdols[j]
+          state.loadedIdols[j] = temp
+        }
+        return state.loadedIdols
+      }
     },
     featuredIdols (state, getters) {
       return getters.loadedIdols.slice(0, 5)
@@ -224,6 +254,9 @@ export const store = new Vuex.Store({
       return (idolId) => {
         return state.loadedIdols.find(idol => idol.id === idolId)
       }
+    },
+    isShufflingIdols (state) {
+      return state.shufflingHandler !== null
     },
     user (state) {
       return state.user
