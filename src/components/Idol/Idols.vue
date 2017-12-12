@@ -9,6 +9,14 @@
         <v-btn large round class="blue" @click="onSort">득표수 정렬</v-btn>
       </v-flex>
     </v-layout>
+    <v-layout>
+      <v-flex xs4 offset-xs4>
+        <v-text-field label="타이머 세팅 (분)" v-model="timer" class="pb-0" hide-details></v-text-field>
+        <v-btn class="primary" @click="onStartTimer()" v-if="!timerHandler">타이머 시작</v-btn>
+        <v-btn class="green" @click="onStopTimer()" v-else>타이머 중지</v-btn>
+        <h2 class="primary--text">{{ minutes }} 분 : {{ seconds }} 초</h2>
+      </v-flex>
+    </v-layout>
     <v-layout row wrap v-if="loading">
       <v-flex xs12 class="text-xs-center">
         <v-progress-circular indeterminate color="primary" :width="7" :size="70"></v-progress-circular>
@@ -51,7 +59,11 @@
 export default {
   data () {
     return {
-      votes: []
+      votes: [],
+      timer: 10,
+      minutes: 0,
+      seconds: 0,
+      timerHandler: null
     }
   },
   computed: {
@@ -69,6 +81,26 @@ export default {
     }
   },
   methods: {
+    onStartTimer () {
+      this.minutes = this.timer
+      this.seconds = 0
+      this.timerHandler = setInterval(() => {
+        if (this.seconds === 0) {
+          this.minutes--
+          this.seconds = 59
+        } else {
+          this.seconds--
+        }
+        if (!this.minutes && !this.seconds) {
+          clearInterval(this.timerHandler)
+          this.timerHandler = null
+        }
+      }, 1000)
+    },
+    onStopTimer () {
+      clearInterval(this.timerHandler)
+      this.timerHandler = null
+    },
     onClick (idol) {
       this.$router.push(`/idols/${idol.id}`)
     },
