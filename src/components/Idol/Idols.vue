@@ -1,20 +1,35 @@
 <template>
   <v-container>
     <v-layout row mb-3>
-      <v-flex xs2 offset-xs4>
+      <v-flex xs12 class="text-xs-center">
+        <h2 class="yellow black--text">총 {{ totalVotes }} 만표 = {{ holsCups }} 느그컵 = {{ migals }} 미갈</h2>
+      </v-flex>
+    </v-layout>
+    <v-layout row mb-3>
+      <v-flex xs5 offset-xs1>
+        <v-card>
+          <v-card-actions class="pa-2">
+            <v-container fluid class="pa-1">
+              <v-layout row>
+                <v-flex xs8>
+                  <v-text-field label="타이머 (분)" v-model="timer" class="pb-1" hide-details v-if="!timerHandler"></v-text-field>
+                  <h4 class="primary--text" v-else>{{ minutes }} 분 : {{ seconds }} 초</h4>
+                </v-flex>
+                <v-flex xs4>
+                  <v-btn class="orange" @click="onStartTimer()" v-if="!timerHandler">타이머 시작</v-btn>
+                  <v-btn class="green" @click="onStopTimer()" v-else>타이머 중지</v-btn>
+                </v-flex>
+              </v-layout>
+            </v-container>
+          </v-card-actions>
+        </v-card>
+      </v-flex>
+      <v-flex xs2 offset-xs1>
         <v-btn large round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
         <v-btn large round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
       </v-flex>
-      <v-flex xs2 offset-xs1>
+      <v-flex xs2>
         <v-btn large round class="blue" @click="onSort">득표수 정렬</v-btn>
-      </v-flex>
-    </v-layout>
-    <v-layout>
-      <v-flex xs4 offset-xs4>
-        <v-text-field label="타이머 세팅 (분)" v-model="timer" class="pb-0" hide-details></v-text-field>
-        <v-btn class="primary" @click="onStartTimer()" v-if="!timerHandler">타이머 시작</v-btn>
-        <v-btn class="green" @click="onStopTimer()" v-else>타이머 중지</v-btn>
-        <h2 class="primary--text">{{ minutes }} 분 : {{ seconds }} 초</h2>
       </v-flex>
     </v-layout>
     <v-layout row wrap v-if="loading">
@@ -78,6 +93,15 @@ export default {
     },
     isShuffling () {
       return this.$store.getters.isShufflingIdols
+    },
+    totalVotes () {
+      return Math.floor(this.idols.reduce((sum, idolB) => sum + idolB.numVotes, 0) / 10000)
+    },
+    migals () {
+      return (this.totalVotes / 77).toFixed(1)
+    },
+    holsCups () {
+      return Math.round(this.totalVotes / 30)
     }
   },
   methods: {

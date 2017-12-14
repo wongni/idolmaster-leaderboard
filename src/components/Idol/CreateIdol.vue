@@ -80,7 +80,7 @@ export default {
       age: '',
       date: '',
       birthDate: new Date(),
-      numVotes: '',
+      numVotes: '0',
       imageUrl: '',
       description: '',
       image: null,
@@ -95,7 +95,7 @@ export default {
       return this.name !== '' && this.imageUrl !== '' && this.numVotes >= 0
     },
     submittableDate () {
-      return new Date(this.date) || new Date()
+      return this.date ? new Date(this.date) : new Date()
     }
   },
   methods: {
