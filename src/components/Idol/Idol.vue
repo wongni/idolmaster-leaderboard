@@ -31,7 +31,8 @@
               </v-layout>
             </v-container>
           </v-card-actions>
-          <v-card-media :src="idol.imageUrl" height="600px">
+          <v-card-media>
+            <img :src="idol.imageUrl">
           </v-card-media>
           <v-card-text>
             <div class="primary--text mb-2">득표수: {{ idol.numVotes | currency }} 표</div>

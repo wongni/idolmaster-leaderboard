@@ -13,7 +13,8 @@
     <v-layout row wrap class="mt-2" v-if="!loading">
       <v-flex xs12 style="height: 100vh;">
         <v-carousel light style="cursor: pointer; height: 80%;">
-          <v-carousel-item v-for="(idol, index) in idols" :src="idol.imageUrl" :key="idol.id" @click="onLoadIdol(idol.id)">
+          <v-carousel-item v-for="(idol, index) in idols" :key="idol.id" @click="onLoadIdol(idol.id)">
+            <img :src="idol.imageUrl">
             <div class="name">
               {{ `${index + 1}위 - ${idol.name}` }} - {{ idol.numVotes | currency }} 표
             </div>

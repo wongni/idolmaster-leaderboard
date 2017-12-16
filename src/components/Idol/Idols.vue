@@ -2,7 +2,7 @@
   <v-container>
     <v-layout row mb-3>
       <v-flex xs12 class="text-xs-center">
-        <h2 class="yellow black--text">총 {{ totalVotes }} 만표 = {{ holsCups }} 느그컵 = {{ migals }} 미갈</h2>
+        <h2 class="yellow black--text">총 {{ totalVotes }} 만표 = {{ holsCups }} 홀스컵 = {{ migals }} 미갈</h2>
       </v-flex>
     </v-layout>
     <v-layout row mb-3>
@@ -44,7 +44,7 @@
             <v-layout row>
               <v-flex xs2>
                 <v-card>
-                  <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl">
+                  <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl" @click="onClick(idol)" style="cursor: pointer;">
                   </v-card-media>
                 </v-card>
               </v-flex>
