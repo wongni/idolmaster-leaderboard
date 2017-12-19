@@ -20,8 +20,14 @@
               </v-layout>
               <v-layout row>
                 <v-flex xs6 offset-xs3>
-                  <v-btn raised class="primary" @click="onPickFile">사진 바꾸기</v-btn>
-                  <input type="file" style="display: none" ref="fileInput" accept="image/*" @change="onFilePicked">
+                  <v-btn raised class="primary" @click="onPickImage">사진 바꾸기</v-btn>
+                  <input type="file" style="display: none" ref="fileInputForImage" accept="image/*" @change="onImagePicked">
+                </v-flex>
+              </v-layout>
+              <v-layout row>
+                <v-flex xs6 offset-xs3>
+                  <v-btn raised class="green" @click="onPickVoice">감사 인사 바꾸기</v-btn>
+                  <input type="file" style="display: none" ref="fileInputForVoice" accept="audio/*" @change="onVoicePicked">
                 </v-flex>
               </v-layout>
             </v-card-text>
@@ -60,6 +66,8 @@ export default {
       editedDescription: this.idol.description,
       editedImageUrl: this.idol.imageUrl,
       editedImage: null,
+      editedVoiceUrl: this.idol.voiceUrl,
+      editedVoice: null,
       editedNumVotes: this.idol.numVotes,
       editedBirthDate: new Date(this.idol.birthDate)
     }
@@ -75,14 +83,15 @@ export default {
         name: this.editedName,
         description: this.editedDescription,
         image: this.editedImage,
+        voice: this.editedVoice,
         numVotes: parseInt(this.editedNumVotes),
         birthDate: (new Date(this.editedBirthDate) || new Date()).toISOString()
       })
     },
-    onPickFile () {
-      this.$refs.fileInput.click()
+    onPickImage () {
+      this.$refs.fileInputForImage.click()
     },
-    onFilePicked (event) {
+    onImagePicked (event) {
       const files = event.target.files
       let filename = files[0].name
       if (filename.lastIndexOf('.') <= 0) {
@@ -94,6 +103,22 @@ export default {
       })
       fileReader.readAsDataURL(files[0])
       this.editedImage = files[0]
+    },
+    onPickVoice () {
+      this.$refs.fileInputForVoice.click()
+    },
+    onVoicePicked (event) {
+      const files = event.target.files
+      let filename = files[0].name
+      if (filename.lastIndexOf('.') <= 0) {
+        return alert('Please add a valid file!')
+      }
+      const fileReader = new FileReader()
+      fileReader.addEventListener('load', () => {
+        this.editedVoiceUrl = fileReader.result
+      })
+      fileReader.readAsDataURL(files[0])
+      this.editedVoice = files[0]
     }
   }
 }

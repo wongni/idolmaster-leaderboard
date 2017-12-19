@@ -60,6 +60,7 @@
                 <v-card-actions class="pa-0">
                   <v-text-field label="투표수" v-model="votes[index]" class="pb-0" hide-details></v-text-field>
                   <v-btn class="primary" :disabled="!votesAreValid(index)" @click="onVote(index)">투표하기</v-btn>
+                  <audio :id="`${idol.id}.voice`" :src="idol.voiceUrl"></audio>
                 </v-card-actions>
               </v-flex>
             </v-layout>
@@ -139,6 +140,9 @@ export default {
       return !isNaN(parseInt(this.votes[index]))
     },
     onVote (index) {
+      let voice = document.getElementById(`${this.idols[index].id}.voice`)
+      voice.play()
+
       const newVotes = parseInt(this.votes[index])
       if (isNaN(newVotes)) {
         return

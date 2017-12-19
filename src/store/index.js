@@ -75,6 +75,7 @@ export const store = new Vuex.Store({
             id: key,
             name: obj[key].name,
             imageUrl: obj[key].imageUrl,
+            voiceUrl: obj[key].voiceUrl,
             japaneseName: obj[key].japaneseName,
             voiceActor: obj[key].voiceActor,
             age: obj[key].age,
@@ -156,7 +157,25 @@ export const store = new Vuex.Store({
                 commit('setLoading', false)
               })
           })
-      } else {
+      }
+      if (payload.voice) {
+        firebase.storage().ref(`idols/${payload.id}.voice`).put(payload.voice)
+          .then(fileData => {
+            const voiceUrl = fileData.metadata.downloadURLs[0]
+            updateObj.voiceUrl = voiceUrl
+            firebase.database().ref('idols').child(payload.id).update(updateObj)
+              .then(() => {
+                commit('setLoading', false)
+                payload.voiceUrl = voiceUrl
+                commit('updateIdol', payload)
+              })
+              .catch(error => {
+                console.log(error)
+                commit('setLoading', false)
+              })
+          })
+      }
+      if (!payload.image && !payload.voice) {
         firebase.database().ref('idols').child(payload.id).update(updateObj)
           .then(() => {
             commit('setLoading', false)
