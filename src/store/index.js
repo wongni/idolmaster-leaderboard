@@ -10,7 +10,7 @@ export const store = new Vuex.Store({
     user: null,
     loading: false,
     error: null,
-    sortingOrder: 'by_vote',
+    sortingOrder: 'by_total_votes',
     shufflingHandler: null
   },
   mutations: {
@@ -40,7 +40,7 @@ export const store = new Vuex.Store({
     },
     startShufflingIdols (state) {
       state.shufflingHandler = setInterval(() => {
-        state.sortingOrder = 'by_vote'
+        state.sortingOrder = 'by_total_votes'
         state.sortingOrder = 'random'
       }, 50)
     },
@@ -48,8 +48,11 @@ export const store = new Vuex.Store({
       clearInterval(state.shufflingHandler)
       state.shufflingHandler = null
     },
-    sortIdols (state) {
-      state.sortingOrder = 'by_vote'
+    sortIdolsByTotalVotes (state) {
+      state.sortingOrder = 'by_total_votes'
+    },
+    sortIdolsByTodayVotes (state) {
+      state.sortingOrder = 'by_today_votes'
     },
     setUser (state, payload) {
       state.user = payload
@@ -82,6 +85,7 @@ export const store = new Vuex.Store({
             birthDate: obj[key].birthDate,
             description: obj[key].description,
             numVotes: obj[key].numVotes,
+            numTodayVotes: obj[key].numTodayVotes,
             creatorId: obj[key].creatorId
           })
         }
@@ -137,6 +141,9 @@ export const store = new Vuex.Store({
       }
       if (payload.numVotes) {
         updateObj.numVotes = payload.numVotes
+      }
+      if (payload.numTodayVotes !== undefined) {
+        updateObj.numTodayVotes = payload.numTodayVotes
       }
       if (payload.birthDate) {
         updateObj.birthDate = payload.birthDate
@@ -204,8 +211,11 @@ export const store = new Vuex.Store({
     stopShufflingIdols ({ commit }) {
       commit('stopShufflingIdols')
     },
-    sortIdols ({ commit }) {
-      commit('sortIdols')
+    sortIdolsByTotalVotes ({ commit }) {
+      commit('sortIdolsByTotalVotes')
+    },
+    sortIdolsByTodayVotes ({ commit }) {
+      commit('sortIdolsByTodayVotes')
     },
     signUserUp ({ commit }, payload) {
       commit('setLoading', true)
@@ -254,8 +264,10 @@ export const store = new Vuex.Store({
   },
   getters: {
     loadedIdols (state) {
-      if (state.sortingOrder === 'by_vote') {
+      if (state.sortingOrder === 'by_total_votes') {
         return state.loadedIdols.sort((idolA, idolB) => idolB.numVotes - idolA.numVotes)
+      } else if (state.sortingOrder === 'by_today_votes') {
+        return state.loadedIdols.sort((idolA, idolB) => idolB.numTodayVotes - idolA.numTodayVotes)
       } else if (state.sortingOrder === 'random') {
         for (let i = state.loadedIdols.length - 1; i > 0; i--) {
           let j = Math.floor(Math.random() * (i + 1))

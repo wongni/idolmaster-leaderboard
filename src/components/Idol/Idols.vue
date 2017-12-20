@@ -2,7 +2,7 @@
   <v-container>
     <v-layout row mb-3>
       <v-flex xs12 class="text-xs-center">
-        <h2 class="yellow black--text">총 {{ totalVotes }} 만표 = {{ holsCups }} 홀스컵 = {{ migals }} 미갈</h2>
+        <h3 class="yellow black--text">총 {{ totalVotes }}만표 (오늘 {{ totalTodayVotes }}만표)={{ holsCups }}홀스컵={{ migals }}미갈</h3>
       </v-flex>
     </v-layout>
     <v-layout row mb-3>
@@ -24,12 +24,18 @@
           </v-card-actions>
         </v-card>
       </v-flex>
-      <v-flex xs2 offset-xs1>
-        <v-btn large round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
-        <v-btn large round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
-      </v-flex>
       <v-flex xs2>
-        <v-btn large round class="blue" @click="onSort">득표수 정렬</v-btn>
+        <v-btn small round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
+        <v-btn small round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
+      </v-flex>
+      <v-flex xs4>
+        <v-btn small round class="blue" @click="onSortByTotal">총 득표수 정렬</v-btn>
+        <v-btn small round class="green" @click="onSortByToday">오늘 득표수 정렬</v-btn>
+      </v-flex>
+    </v-layout>
+    <v-layout row mb-3>
+      <v-flex xs6 offset-xs4>
+        <v-btn large round class="black yellow--text" @click="onResetTodayVotes()">오늘 득표 초기화</v-btn>
       </v-flex>
     </v-layout>
     <v-layout row wrap v-if="loading">
@@ -52,7 +58,8 @@
                 <v-card-title primary-title class="pt-0 pb-0" @click="onClick(idol)" style="cursor: pointer;">
                   <div>
                     <h5 class="white--text mb-2">{{ (index + 1) + '. ' + idol.name }}</h5>
-                    <h6 class="primary--text mb-1">득표수: {{ idol.numVotes | currency }} 표</h6>
+                    <h6 class="primary--text mb-1">총 득표수: {{ idol.numVotes | currency }} 표</h6>
+                    <div class="black--text mb-1">오늘 득표수: {{ idol.numTodayVotes | currency }} 표</div>
                   </div>
                 </v-card-title>
               </v-flex>
@@ -79,7 +86,8 @@ export default {
       timer: 10,
       minutes: 0,
       seconds: 0,
-      timerHandler: null
+      timerHandler: null,
+      isMonitoringTwip: false
     }
   },
   computed: {
@@ -103,6 +111,9 @@ export default {
     },
     holsCups () {
       return Math.round(this.totalVotes / 30)
+    },
+    totalTodayVotes () {
+      return Math.round(this.idols.reduce((sum, idolB) => sum + (isNaN(idolB.numTodayVotes) ? 0 : idolB.numTodayVotes), 0) / 10000)
     }
   },
   methods: {
@@ -149,7 +160,8 @@ export default {
       }
       this.$store.dispatch('updateIdolData', {
         id: this.idols[index].id,
-        numVotes: this.idols[index].numVotes + newVotes
+        numVotes: this.idols[index].numVotes + newVotes,
+        numTodayVotes: (this.idols[index].numTodayVotes || 0) + newVotes
       })
       this.votes[index] = ''
     },
@@ -159,8 +171,20 @@ export default {
     onStopShuffling () {
       this.$store.dispatch('stopShufflingIdols')
     },
-    onSort () {
-      this.$store.dispatch('sortIdols')
+    onSortByTotal () {
+      this.$store.dispatch('sortIdolsByTotalVotes')
+    },
+    onSortByToday () {
+      this.$store.dispatch('sortIdolsByTodayVotes')
+    },
+    onResetTodayVotes () {
+      this.idols.forEach(idol => {
+        this.$store.dispatch('updateIdolData', {
+          id: idol.id,
+          numTodayVotes: 0
+        })
+      })
+      this.$store.dispatch('sortIdolsByTotalVotes')
     }
   }
 }
