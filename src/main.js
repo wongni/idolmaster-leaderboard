@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuetify from 'vuetify'
 import * as firebase from 'firebase'
 import VueCurrencyFilter from 'vue-currency-filter'
+import Toasted from 'vue-toasted'
 import App from './App'
 import router from './router'
 import { store } from './store'
@@ -9,15 +10,18 @@ import DateFilter from './filters/date'
 import AlertCmp from './components/Shared/Alert.vue'
 import EditIdolDetailsDialogCmp from './components/Idol/Edit/EditIdolDetailsDialog.vue'
 import DeleteIdolConfirmDialogCmp from './components/Idol/Edit/DeleteIdolConfirmDialog.vue'
+import ResetTodayVotesConfirmDialogCmp from './components/Idol/Popup/ResetTodayVotesConfirmDialog.vue'
 
 Vue.use(Vuetify)
 Vue.use(VueCurrencyFilter, { thousandsSeparator: ',' })
+Vue.use(Toasted)
 Vue.config.productionTip = false
 
 Vue.filter('date', DateFilter)
 Vue.component('app-alert', AlertCmp)
 Vue.component('app-edit-idol-details-dialog', EditIdolDetailsDialogCmp)
 Vue.component('app-delete-idol-confirm-dialog', DeleteIdolConfirmDialogCmp)
+Vue.component('app-reset-today-votes-confirm-dialog', ResetTodayVotesConfirmDialogCmp)
 
 /* eslint-disable no-new */
 new Vue({
