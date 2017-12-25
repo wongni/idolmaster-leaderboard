@@ -2,7 +2,7 @@
   <v-container>
     <v-layout row wrap>
       <v-flex xs12 class="text-xs-center text-sm-center">
-        <h2 class="primary--text">Top Five</h2>
+        <h2 class="primary--text">NGTV Production</h2>
       </v-flex>
     </v-layout>
     <v-layout>
@@ -29,7 +29,7 @@
 export default {
   computed: {
     idols () {
-      return this.$store.getters.featuredIdols
+      return this.$store.getters.loadedIdols
     },
     loading () {
       return this.$store.getters.loading
