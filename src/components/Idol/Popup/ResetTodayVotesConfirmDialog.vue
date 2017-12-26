@@ -1,9 +1,6 @@
 <template>
   <v-dialog width="450px" persistent v-model="resetTodayVotesConfirmDialog">
-    <v-btn large round class="black yellow--text" slot="activator">오늘 득표 초기화</v-btn>
-    <!-- <v-btn fab accent slot="activator">
-      <v-icon>delete</v-icon>
-    </v-btn> -->
+    <v-btn small round class="black yellow--text" slot="activator">오늘 득표 초기화</v-btn>
     <v-card>
       <v-container>
         <v-layout row wrap>

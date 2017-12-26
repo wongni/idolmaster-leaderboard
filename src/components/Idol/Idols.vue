@@ -2,12 +2,12 @@
   <v-container>
     <v-layout row mb-3>
       <v-flex xs12 class="text-xs-center">
-        <h3 class="yellow black--text">총 {{ Math.round(totalVotes / 10000) }}만표 (오늘 {{ Math.round(totalTodayVotes / 10000) }}만표)={{ holsCups }}홀스컵={{ migals }}미갈</h3>
+        <h4 class="yellow black--text">총 {{ Math.round(totalVotes / 10000) }}만표 (오늘 {{ Math.round(totalTodayVotes / 10000) }}만표)={{ holsCups }}홀스컵={{ migals }}미갈=홀금연 {{ holsStopSmoking }}일</h4>
       </v-flex>
     </v-layout>
     <v-layout row mb-3>
       <v-flex xs5 offset-xs1>
-        <v-card>
+        <v-card v-if="userIsAuthenticated">
           <v-card-actions class="pa-2">
             <v-container fluid class="pa-1">
               <v-layout row>
@@ -20,6 +20,15 @@
                   <v-btn class="green" @click="onStopTimer()" v-else>타이머 중지</v-btn>
                 </v-flex>
               </v-layout>
+              <v-layout row>
+                <v-flex xs8>
+                  <v-text-field label="트윕 오버레이 주소" v-model="twipOverlayUrl" class="pb-1" type="password" required hide-details></v-text-field>
+                </v-flex>
+                <v-flex xs4>
+                  <v-btn class="pink white--text" @click="onStartMonitoringTwip" v-if="cardClass === 'warning'"><strong>자동 집계 시작</strong></v-btn>
+                  <v-btn class="yellow" @click="onStopMonitoringTwip(true)" v-else><strong>자동 집계 중지</strong></v-btn>
+                </v-flex>
+              </v-layout>
             </v-container>
           </v-card-actions>
         </v-card>
@@ -27,17 +36,11 @@
       <v-flex xs2>
         <v-btn small round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
         <v-btn small round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
+        <app-reset-today-votes-confirm-dialog :idols="idols" v-if="userIsAuthenticated"></app-reset-today-votes-confirm-dialog>
       </v-flex>
-      <v-flex xs4>
+      <v-flex xs2>
         <v-btn small round class="blue" @click="onSortByTotal">총 득표수 정렬</v-btn>
         <v-btn small round class="green" @click="onSortByToday">오늘 득표수 정렬</v-btn>
-      </v-flex>
-    </v-layout>
-    <v-layout row mb-3>
-      <v-flex xs6 offset-xs2>
-        <v-btn large round class="pink white--text" @click="onStartMonitoringTwip" v-if="!twipWebSocket"><strong>자동 집계 시작</strong></v-btn>
-        <v-btn large round class="yellow" @click="onStopMonitoringTwip" v-else><strong>자동 집계 중지</strong></v-btn>
-        <app-reset-today-votes-confirm-dialog :idols="idols"></app-reset-today-votes-confirm-dialog>
       </v-flex>
     </v-layout>
     <v-layout row wrap v-if="loading">
@@ -50,14 +53,14 @@
         <v-card :class="cardClass">
           <v-container fluid class="pa-1">
             <v-layout row>
-              <v-flex xs2>
+              <v-flex xs2 @click="onClick(idol)" style="cursor: pointer;">
                 <v-card>
-                  <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl" @click="onClick(idol)" style="cursor: pointer;">
+                  <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl">
                   </v-card-media>
                 </v-card>
               </v-flex>
-              <v-flex xs6>
-                <v-card-title primary-title class="pt-0 pb-0" @click="onClick(idol)" style="cursor: pointer;">
+              <v-flex xs6 @click="onClick(idol)" style="cursor: pointer;">
+                <v-card-title primary-title class="pt-0 pb-0">
                   <div>
                     <h5 class="white--text mb-2">{{ (index + 1) + '. ' + idol.name }}</h5>
                     <h6 class="primary--text mb-2">총 {{ idol.numVotes | currency }}표 (점유율 {{ (idol.numVotes / (totalVotes) * 100).toFixed(1) }}%)</h6>
@@ -92,7 +95,9 @@ export default {
       seconds: 0,
       timerHandler: null,
       twipWebSocket: null,
-      cardClass: 'warning'
+      cardClass: 'warning',
+      twipOverlayUrl: null,
+      twipConnectionChecker: null
     }
   },
   computed: {
@@ -119,7 +124,14 @@ export default {
     },
     totalTodayVotes () {
       return this.idols.reduce((sum, idolB) => sum + (isNaN(idolB.numTodayVotes) ? 0 : idolB.numTodayVotes), 0)
+    },
+    holsStopSmoking () {
+      return (this.totalVotes / 30000 / 24).toFixed(1)
     }
+  },
+  mounted () {
+    this.twipOverlayUrl = this.$store.getters.twipOverlayUrl
+    this.onStartMonitoringTwip()
   },
   destroyed () {
     this.onStopMonitoringTwip()
@@ -166,7 +178,6 @@ export default {
       if (isNaN(newVotes)) {
         return
       }
-      console.log('updateIdolData')
       this.$store.dispatch('updateIdolData', {
         id: this.idols[index].id,
         numVotes: this.idols[index].numVotes + newVotes,
@@ -181,16 +192,66 @@ export default {
       this.$store.dispatch('stopShufflingIdols')
     },
     onStartMonitoringTwip () {
-      this.twipWebSocket = new W3CWebSocket('wss://io.mytwip.net/socket.io/?eventlist_key=MQwQmGXpWv&EIO=3&transport=websocket', 'echo-protocol')
+      if (!this.twipOverlayUrl) return
+
+      // 2초 안에 웹 소켓 연결을 성공하지 못하면 연결을 닫고 에러 메시지를 띄운다.
+      this.twipConnectionChecker = setTimeout(() => {
+        if (this.cardClass !== 'success') {
+          this.twipConnectionChecker = null
+          this.twipWebSocket.close()
+          this.$toasted.error('트윕 연동 실패: 트윕 오버레이 주소를 확인해 주세요', {
+            theme: 'primary',
+            position: 'top-left',
+            duration: null,
+            action: {
+              text: '확인',
+              onClick: (e, toastObject) => {
+                toastObject.goAway(0)
+              }
+            }
+          })
+        }
+      }, 2000)
+
+      const twipEventKey = this.twipOverlayUrl.slice(this.twipOverlayUrl.lastIndexOf('/') + 1)
+      const twipWebSocketUrl = `wss://io.mytwip.net/socket.io/?eventlist_key=${twipEventKey}&EIO=3&transport=websocket`
+      this.twipWebSocket = new W3CWebSocket(twipWebSocketUrl, 'echo-protocol')
       this.twipWebSocket.onerror = () => {
+        this.$toasted.error('트윕 연동 에러: 다시 연결해 주세요', {
+          theme: 'primary',
+          position: 'top-left',
+          duration: null,
+          action: {
+            text: '확인',
+            onClick: (e, toastObject) => {
+              toastObject.goAway(0)
+            }
+          }
+        })
       }
       this.twipWebSocket.onclose = () => {
         this.onStopMonitoringTwip()
       }
       this.twipWebSocket.onopen = () => {
-        this.cardClass = 'success'
       }
       this.twipWebSocket.onmessage = message => {
+        if (message.data.indexOf('reload') >= 0) {
+          clearTimeout(this.twipConnectionChecker)
+          this.twipConnectionChecker = null
+          this.cardClass = 'success'
+          this.$store.dispatch('storeTwipOverlayUrl', { url: this.twipOverlayUrl })
+          this.$toasted.success('트윕 연동 성공: 자동 집계를 시작합니다.', {
+            theme: 'primary',
+            position: 'top-left',
+            duration: 5000,
+            action: {
+              text: '확인',
+              onClick: (e, toastObject) => {
+                toastObject.goAway(0)
+              }
+            }
+          })
+        }
         const startIndex = message.data.indexOf('{')
         const endIndex = message.data.lastIndexOf('}')
         if (startIndex >= 0 && endIndex >= 0) {
@@ -208,7 +269,7 @@ export default {
               const index = this.idols.findIndex(idol => idol.id === targetIdol.id)
               this.votes[index] = msg.amount
               this.onVote(index)
-              this.$toasted.show('자동 집계 성공: ' + targetIdol.name + '에게 ' + msg.amount + '표 추가', {
+              this.$toasted.show('성공: ' + msg.nickname + '님이 ' + targetIdol.name + '에게 ' + msg.amount + '표 추가', {
                 theme: 'outline',
                 position: 'top-right',
                 duration: 5000,
@@ -220,7 +281,7 @@ export default {
                 }
               })
             } else {
-              this.$toasted.show('자동 집계 실패: ' + msg.comment + ' from ' + msg.nickname, {
+              this.$toasted.show(`실패: ${msg.nickname}님의 ${msg.amount}표 (${msg.comment})`, {
                 theme: 'primary',
                 position: 'top-right',
                 duration: null,
@@ -236,16 +297,35 @@ export default {
         }
       }
     },
-    onStopMonitoringTwip () {
+    onStopMonitoringTwip (clearUrl) {
+      clearTimeout(this.twipConnectionChecker)
+      this.twipConnectionChecker = null
+
       if (this.twipWebSocket) {
         this.twipWebSocket.close()
         this.twipWebSocket = null
+        this.$toasted.info('트윕 연동 해제: 자동 집계를 중지합니다.', {
+          theme: 'primary',
+          position: 'top-left',
+          duration: 5000,
+          action: {
+            text: '확인',
+            onClick: (e, toastObject) => {
+              toastObject.goAway(0)
+            }
+          }
+        })
       }
       if (this.twipPingTask) {
         clearInterval(this.twipPingTask)
         this.twipPingTask = null
       }
       this.cardClass = 'warning'
+      this.twipOverlayUrl = null
+
+      if (clearUrl) {
+        this.$store.dispatch('storeTwipOverlayUrl', { url: this.twipOverlayUrl })
+      }
     },
     onSortByTotal () {
       this.$store.dispatch('sortIdolsByTotalVotes')

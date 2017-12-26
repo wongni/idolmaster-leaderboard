@@ -11,7 +11,8 @@ export const store = new Vuex.Store({
     loading: false,
     error: null,
     sortingOrder: 'by_total_votes',
-    shufflingHandler: null
+    shufflingHandler: null,
+    twipOverlayUrl: null
   },
   mutations: {
     setLoadedIdols (state, payload) {
@@ -65,6 +66,9 @@ export const store = new Vuex.Store({
     },
     clearError (state) {
       state.error = null
+    },
+    storeTwipOverlayUrl (state, payload) {
+      state.twipOverlayUrl = payload.url
     }
   },
   actions: {
@@ -139,7 +143,7 @@ export const store = new Vuex.Store({
       if (payload.description) {
         updateObj.description = payload.description
       }
-      if (payload.numVotes) {
+      if (payload.numVotes !== undefined) {
         updateObj.numVotes = payload.numVotes
       }
       if (payload.numTodayVotes !== undefined) {
@@ -260,6 +264,9 @@ export const store = new Vuex.Store({
     },
     clearError ({ commit }) {
       commit('clearError')
+    },
+    storeTwipOverlayUrl ({ commit }, payload) {
+      commit('storeTwipOverlayUrl', payload)
     }
   },
   getters: {
@@ -297,6 +304,9 @@ export const store = new Vuex.Store({
     },
     error (state) {
       return state.error
+    },
+    twipOverlayUrl (state) {
+      return state.twipOverlayUrl
     }
   }
 })
