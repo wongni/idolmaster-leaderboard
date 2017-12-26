@@ -262,8 +262,15 @@ export default {
             }, msg.pingInterval)
           } else if (msg.amount) {
             const targetIdol = this.idols.find(idol => {
-              const name = idol.name.slice(idol.name.indexOf(' ') + 1)
-              return msg.nickname.indexOf(name) >= 0 || msg.comment.indexOf(name) >= 0
+              const name = ('@' + idol.name.slice(idol.name.indexOf(' ') + 1)).trim()
+              const nameFound = msg.nickname.indexOf(name) >= 0 || msg.comment.indexOf(name) >= 0
+              const nickFound = idol.nicknames ? idol.nicknames.find(nick => {
+                if (!nick.trim()) {
+                  return false
+                }
+                return msg.nickname.indexOf(`@${nick.trim()}`) >= 0 || msg.comment.indexOf(`@${nick.trim()}`) >= 0
+              }) : false
+              return nameFound || nickFound
             })
             if (targetIdol) {
               const index = this.idols.findIndex(idol => idol.id === targetIdol.id)

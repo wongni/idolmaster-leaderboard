@@ -90,7 +90,8 @@ export const store = new Vuex.Store({
             description: obj[key].description,
             numVotes: obj[key].numVotes,
             numTodayVotes: obj[key].numTodayVotes,
-            creatorId: obj[key].creatorId
+            creatorId: obj[key].creatorId,
+            nicknames: obj[key].nicknames
           })
         }
         commit('setLoadedIdols', idols)
@@ -151,6 +152,9 @@ export const store = new Vuex.Store({
       }
       if (payload.birthDate) {
         updateObj.birthDate = payload.birthDate
+      }
+      if (payload.nicknames) {
+        updateObj.nicknames = payload.nicknames
       }
       if (payload.image) {
         firebase.storage().ref(`idols/${payload.id}.image`).put(payload.image)

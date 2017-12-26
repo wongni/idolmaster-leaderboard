@@ -35,6 +35,7 @@
           <v-flex xs7>
             <v-card-text>
               <v-text-field name="name" label="이름" id="name" v-model="editedName" hide-details required></v-text-field>
+              <v-text-field name="nicks" label="별명 (예: 큿, 72)" id="name" v-model="editedNicks" hide-details></v-text-field>
               <v-text-field name="description" label="각오" id="description" v-model="editedDescription" hide-details multi-line></v-text-field>
               <v-text-field name="numVotes" label="득표수" id="numVotes" v-model="editedNumVotes"></v-text-field>
               <h6>생일을 선택하세요</h6>
@@ -60,6 +61,13 @@
 export default {
   props: ['idol'],
   data () {
+    let nicknamesString = this.idol.nicknames ? this.idol.nicknames.reduce((acc, nick) => {
+      if (typeof nick === 'string') {
+        acc += nick.trim() + ', '
+      }
+      console.log(acc)
+      return acc
+    }, '') : ''
     return {
       editDialog: false,
       editedName: this.idol.name,
@@ -69,7 +77,8 @@ export default {
       editedVoiceUrl: this.idol.voiceUrl,
       editedVoice: null,
       editedNumVotes: this.idol.numVotes,
-      editedBirthDate: new Date(this.idol.birthDate)
+      editedBirthDate: new Date(this.idol.birthDate),
+      editedNicks: nicknamesString.slice(0, nicknamesString.length - 2)
     }
   },
   methods: {
@@ -78,6 +87,8 @@ export default {
         return
       }
       this.editDialog = false
+      const nicks = this.editedNicks.split(',')
+      const nicknames = nicks.map(nick => nick.trim())
       this.$store.dispatch('updateIdolData', {
         id: this.idol.id,
         name: this.editedName,
@@ -85,7 +96,8 @@ export default {
         image: this.editedImage,
         voice: this.editedVoice,
         numVotes: parseInt(this.editedNumVotes),
-        birthDate: (new Date(this.editedBirthDate) || new Date()).toISOString()
+        birthDate: (new Date(this.editedBirthDate) || new Date()).toISOString(),
+        nicknames
       })
     },
     onPickImage () {
