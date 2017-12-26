@@ -12,7 +12,7 @@
     </v-layout>
     <v-layout row wrap class="mt-2" v-if="!loading">
       <v-flex xs12 style="height: 100vh;">
-        <v-carousel light style="cursor: pointer; height: 80%;">
+        <v-carousel light style="cursor: pointer; height: 80%;" interval="3000">
           <v-carousel-item v-for="(idol, index) in idols" :key="idol.id" @click="onLoadIdol(idol.id)" src="">
             <img :src="idol.imageUrl">
             <div class="name">
