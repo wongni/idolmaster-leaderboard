@@ -62,7 +62,7 @@
               <v-flex xs6 @click="onClick(idol)" style="cursor: pointer;">
                 <v-card-title primary-title class="pt-0 pb-0">
                   <div>
-                    <h5 class="white--text mb-2">{{ (index + 1) + '. ' + idol.name }}</h5>
+                    <h5 class="white--text mb-2">{{ (index + 1) + '. ' + getLastName(idol) }} ({{ getNicknamesString(idol) }})</h5>
                     <h6 class="primary--text mb-2">총 {{ idol.numVotes | currency }}표 (점유율 {{ (idol.numVotes / (totalVotes) * 100).toFixed(1) }}%)</h6>
                     <div class="black--text mb-1">오늘 {{ idol.numTodayVotes | currency }}표 (점유율 {{ ((idol.numTodayVotes / (totalTodayVotes) * 100) || 0).toFixed(1) }}%)</div>
                   </div>
@@ -339,6 +339,19 @@ export default {
     },
     onSortByToday () {
       this.$store.dispatch('sortIdolsByTodayVotes')
+    },
+    getNicknamesString (idol) {
+      const nicknameString = idol.nicknames ? idol.nicknames.reduce((acc, nick) => {
+        if (typeof nick === 'string') {
+          acc += nick.trim() + ', '
+        }
+        console.log(acc)
+        return acc
+      }, '') : ''
+      return nicknameString.slice(0, nicknameString.length - 2)
+    },
+    getLastName (idol) {
+      return idol.name.slice(idol.name.indexOf(' ') === -1 ? 0 : idol.name.indexOf(' '))
     }
   }
 }

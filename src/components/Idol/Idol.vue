@@ -38,6 +38,7 @@
             <div class="primary--text mb-2">득표수: {{ idol.numVotes | currency }} 표</div>
             <div class="info--text mb-2">성우: {{ idol.voiceActor }}</div>
             <div class="mb-2">나이: {{ idol.age }}</div>
+            <div class="mb-2">별명: {{ this.getNicknamesString() }}</div>
             <div class="mb-2">생일: {{ idol.birthDate | date }}</div>
             <div class="mb-2">각오: {{ idol.description }}</div>
           </v-card-text>
@@ -91,7 +92,18 @@ export default {
         numVotes: this.idol.numVotes + newVotes
       })
       this.$router.push('/idols')
+    },
+    getNicknamesString () {
+      const nicknameString = this.idol.nicknames ? this.idol.nicknames.reduce((acc, nick) => {
+        if (typeof nick === 'string') {
+          acc += nick.trim() + ', '
+        }
+        console.log(acc)
+        return acc
+      }, '') : ''
+      return nicknameString.slice(0, nicknameString.length - 2)
     }
   }
 }
+
 </script>
