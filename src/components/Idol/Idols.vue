@@ -53,13 +53,13 @@
         <v-card :class="cardClass">
           <v-container fluid class="pa-1">
             <v-layout row>
-              <v-flex xs2 @click="onClick(idol)" style="cursor: pointer;">
+              <v-flex xs4 @click="onClick(idol)" style="cursor: pointer;">
                 <v-card>
                   <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl">
                   </v-card-media>
                 </v-card>
               </v-flex>
-              <v-flex xs6 @click="onClick(idol)" style="cursor: pointer;">
+              <v-flex xs5 @click="onClick(idol)" style="cursor: pointer;">
                 <v-card-title primary-title class="pt-0 pb-0">
                   <div>
                     <h5 class="white--text mb-2">{{ (index + 1) + '. ' + getLastName(idol) }} ({{ getNicknamesString(idol) }})</h5>
@@ -68,7 +68,7 @@
                   </div>
                 </v-card-title>
               </v-flex>
-              <v-flex xs4 class="white" v-if="userIsAuthenticated">
+              <v-flex xs3 class="white" v-if="userIsAuthenticated">
                 <v-card-actions class="pa-0">
                   <v-text-field label="투표수" v-model="votes[index]" class="pb-0" hide-details></v-text-field>
                   <v-btn class="primary" :disabled="!votesAreValid(index)" @click="onVote(index)">투표하기</v-btn>
