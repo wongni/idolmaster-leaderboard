@@ -35,7 +35,7 @@
       </v-flex>
       <v-flex xs2>
         <v-btn small round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
-        <v-btn small round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
+        <v-btn small round class="yellow lighten-3" @click="onStopShuffling" v-else>주사위 신의 선택!</v-btn>
         <app-reset-today-votes-confirm-dialog :idols="idols" v-if="userIsAuthenticated"></app-reset-today-votes-confirm-dialog>
       </v-flex>
       <v-flex xs2>
