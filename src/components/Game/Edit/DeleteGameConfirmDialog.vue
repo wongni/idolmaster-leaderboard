@@ -7,7 +7,7 @@
       <v-container>
         <v-layout row wrap>
           <v-flex xs12>
-            <v-card-title>{{ idol.name }}을(를) 집으로 돌려 보냅니까?</v-card-title>
+            <v-card-title>{{ game.name }}을(를) 집으로 돌려 보냅니까?</v-card-title>
           </v-flex>
         </v-layout>
         <v-divider></v-divider>
@@ -31,11 +31,11 @@ export default {
       deleteConfirmDialog: false
     }
   },
-  props: ['idol'],
+  props: ['game'],
   methods: {
     onDeleteConfirmed () {
-      this.$store.dispatch('deleteIdol', { id: this.idol.id })
-      this.$router.push('/idols')
+      this.$store.dispatch('deleteGame', { id: this.game.id })
+      this.$router.push('/games')
     }
   }
 }

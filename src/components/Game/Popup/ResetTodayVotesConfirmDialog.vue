@@ -29,16 +29,16 @@ export default {
       resetTodayVotesConfirmDialog: false
     }
   },
-  props: ['idols'],
+  props: ['games'],
   methods: {
     onResetConfirmed () {
-      this.idols.forEach(idol => {
-        this.$store.dispatch('updateIdolData', {
-          id: idol.id,
+      this.games.forEach(game => {
+        this.$store.dispatch('updateGameData', {
+          id: game.id,
           numTodayVotes: 0
         })
       })
-      this.$store.dispatch('sortIdolsByTotalVotes')
+      this.$store.dispatch('sortGamesByTotalVotes')
       this.resetTodayVotesConfirmDialog = false
     }
   }

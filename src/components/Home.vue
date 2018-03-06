@@ -2,7 +2,7 @@
   <v-container>
     <v-layout row wrap>
       <v-flex xs12 class="text-xs-center text-sm-center">
-        <h2 class="primary--text">NGTV Production</h2>
+        <h2 class="primary--text">나이스게임티비 사내매치업</h2>
       </v-flex>
     </v-layout>
     <v-layout>
@@ -13,10 +13,10 @@
     <v-layout row wrap class="mt-2" v-if="!loading">
       <v-flex xs12 style="height: 100vh;">
         <v-carousel light style="cursor: pointer; height: 80%;" interval="5000">
-          <v-carousel-item v-for="(idol, index) in idols" :key="idol.id" @click="onLoadIdol(idol.id)" src="">
-            <img :src="idol.imageUrl" width="100%">
+          <v-carousel-item v-for="(game, index) in games" :key="game.id" @click="onLoadGame(game.id)" src="">
+            <img :src="game.imageUrl" width="100%">
             <div class="name">
-              {{ `${index + 1}위-${idol.name}` }}-{{ idol.numVotes | currency }}표 (오늘 {{ idol.numTodayVotes | currency }}표)
+              {{ `${index + 1}위-${game.name}` }}-{{ game.numVotes | currency }}표 (오늘 {{ game.numTodayVotes | currency }}표)
             </div>
           </v-carousel-item>
         </v-carousel>
@@ -28,16 +28,16 @@
 <script>
 export default {
   computed: {
-    idols () {
-      return this.$store.getters.loadedIdols
+    games () {
+      return this.$store.getters.loadedGames
     },
     loading () {
       return this.$store.getters.loading
     }
   },
   methods: {
-    onLoadIdol (id) {
-      this.$router.push(`/idols/${id}`)
+    onLoadGame (id) {
+      this.$router.push(`/games/${id}`)
     }
   }
 }

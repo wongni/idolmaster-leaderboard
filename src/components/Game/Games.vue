@@ -2,27 +2,18 @@
   <v-container>
     <v-layout row mb-3>
       <v-flex xs12 class="text-xs-center">
-        <h4 class="yellow black--text">총 {{ Math.round(totalVotes / 10000) }}만표 (오늘 {{ Math.round(totalTodayVotes / 10000) }}만표)={{ holsCups }}홀스컵={{ migals }}미갈=홀금연 {{ holsStopSmoking }}일</h4>
+        <h4 class="purple white--text">총 {{ Math.round(totalVotes / 10000) }}만표</h4>
       </v-flex>
     </v-layout>
     <v-layout row mb-3>
-      <v-flex xs5 offset-xs1>
+      <v-flex xs10 offset-xs1>
         <v-card v-if="userIsAuthenticated">
           <v-card-actions class="pa-2">
             <v-container fluid class="pa-1">
               <v-layout row>
                 <v-flex xs8>
-                  <v-text-field label="타이머 (분)" v-model="timer" class="pb-1" hide-details v-if="!timerHandler"></v-text-field>
-                  <h4 class="primary--text" v-else>{{ minutes }} 분 : {{ seconds }} 초</h4>
-                </v-flex>
-                <v-flex xs4>
-                  <v-btn class="orange" @click="onStartTimer()" v-if="!timerHandler">타이머 시작</v-btn>
-                  <v-btn class="green" @click="onStopTimer()" v-else>타이머 중지</v-btn>
-                </v-flex>
-              </v-layout>
-              <v-layout row>
-                <v-flex xs8>
                   <v-text-field label="트윕 오버레이 주소" v-model="twipOverlayUrl" class="pb-1" type="password" required hide-details></v-text-field>
+                  <v-text-field label="게임 추가 최소 금액" v-model="gameAddMinimumAmount" class="pb-1" type="text" required hide-details></v-text-field>
                 </v-flex>
                 <v-flex xs4>
                   <v-btn class="pink white--text" @click="onStartMonitoringTwip" v-if="cardClass === 'warning'"><strong>자동 집계 시작</strong></v-btn>
@@ -33,46 +24,30 @@
           </v-card-actions>
         </v-card>
       </v-flex>
-      <v-flex xs2>
-        <v-btn small round class="primary" @click="onStartShuffling" v-if="!isShuffling">돌려 돌려 아이돌</v-btn>
-        <v-btn small round class="yellow lighten-3" @click="onStopShuffling" v-else>선택 2017</v-btn>
-        <app-reset-today-votes-confirm-dialog :idols="idols" v-if="userIsAuthenticated"></app-reset-today-votes-confirm-dialog>
-      </v-flex>
-      <v-flex xs2>
-        <v-btn small round class="blue" @click="onSortByTotal">총 득표수 정렬</v-btn>
-        <v-btn small round class="green" @click="onSortByToday">오늘 득표수 정렬</v-btn>
-      </v-flex>
     </v-layout>
     <v-layout row wrap v-if="loading">
       <v-flex xs12 class="text-xs-center">
         <v-progress-circular indeterminate color="primary" :width="7" :size="70"></v-progress-circular>
       </v-flex>
     </v-layout>
-    <v-layout row wrap v-for="(idol, index) in idols" :key="idol.id" class="mb-2" v-else>
+    <v-layout row wrap v-for="(game, index) in games" :key="game.id" class="mb-2" v-else>
       <v-flex xs12 sm10 offset-sm1>
         <v-card :class="cardClass">
           <v-container fluid class="pa-1">
             <v-layout row>
-              <v-flex xs4 @click="onClick(idol)" style="cursor: pointer;">
-                <v-card>
-                  <v-card-media contain :height="cardHeight(index)" :src="idol.imageUrl">
-                  </v-card-media>
-                </v-card>
-              </v-flex>
-              <v-flex xs5 @click="onClick(idol)" style="cursor: pointer;">
+              <v-flex xs7 @click="onClick(game)" style="cursor: pointer;">
                 <v-card-title primary-title class="pt-0 pb-0">
                   <div>
-                    <h5 class="white--text mb-2">{{ (index + 1) + '. ' + getLastName(idol) }} ({{ getNicknamesString(idol) }})</h5>
-                    <h6 class="primary--text mb-2">총 {{ idol.numVotes | currency }}표 (점유율 {{ (idol.numVotes / (totalVotes) * 100).toFixed(1) }}%)</h6>
-                    <div class="black--text mb-1">오늘 {{ idol.numTodayVotes | currency }}표 (점유율 {{ ((idol.numTodayVotes / (totalTodayVotes) * 100) || 0).toFixed(1) }}%)</div>
+                    <h5 class="white--text mb-2">{{ (index + 1) + '. ' + getLastName(game) }}</h5>
+                    <h6 class="primary--text mb-2">총 {{ game.numVotes | currency }}표 (점유율 {{ (game.numVotes / (totalVotes) * 100).toFixed(1) }}%)</h6>
                   </div>
                 </v-card-title>
               </v-flex>
-              <v-flex xs3 class="white" v-if="userIsAuthenticated">
+              <v-flex xs5 class="white" v-if="userIsAuthenticated">
                 <v-card-actions class="pa-0">
                   <v-text-field label="투표수" v-model="votes[index]" class="pb-0" hide-details></v-text-field>
                   <v-btn class="primary" :disabled="!votesAreValid(index)" @click="onVote(index)">투표하기</v-btn>
-                  <audio :id="`${idol.id}.voice`" :src="idol.voiceUrl"></audio>
+                  <audio :id="`${game.id}.voice`" :src="game.voiceUrl"></audio>
                 </v-card-actions>
               </v-flex>
             </v-layout>
@@ -97,12 +72,13 @@ export default {
       twipWebSocket: null,
       cardClass: 'warning',
       twipOverlayUrl: null,
-      twipConnectionChecker: null
+      twipConnectionChecker: null,
+      gameAddMinimumAmount: 0
     }
   },
   computed: {
-    idols () {
-      return this.$store.getters.loadedIdols
+    games () {
+      return this.$store.getters.loadedGames
     },
     loading () {
       return this.$store.getters.loading
@@ -111,10 +87,10 @@ export default {
       return this.$store.getters.user !== null && this.$store.getters.user !== undefined
     },
     isShuffling () {
-      return this.$store.getters.isShufflingIdols
+      return this.$store.getters.isShufflingGames
     },
     totalVotes () {
-      return this.idols.reduce((sum, idolB) => sum + idolB.numVotes, 0)
+      return this.games.reduce((sum, gameB) => sum + gameB.numVotes, 0)
     },
     migals () {
       return (this.totalVotes / 770000).toFixed(1)
@@ -123,7 +99,7 @@ export default {
       return Math.round(this.totalVotes / 300000)
     },
     totalTodayVotes () {
-      return this.idols.reduce((sum, idolB) => sum + (isNaN(idolB.numTodayVotes) ? 0 : idolB.numTodayVotes), 0)
+      return this.games.reduce((sum, gameB) => sum + (isNaN(gameB.numTodayVotes) ? 0 : gameB.numTodayVotes), 0)
     },
     holsStopSmoking () {
       return (this.totalVotes / 30000 / 24).toFixed(1)
@@ -131,6 +107,7 @@ export default {
   },
   mounted () {
     this.twipOverlayUrl = this.$store.getters.twipOverlayUrl
+    this.gameAddMinimumAmount = this.$store.getters.gameAddMinimumAmount
     this.onStartMonitoringTwip()
   },
   destroyed () {
@@ -157,8 +134,8 @@ export default {
       clearInterval(this.timerHandler)
       this.timerHandler = null
     },
-    onClick (idol) {
-      this.$router.push(`/idols/${idol.id}`)
+    onClick (game) {
+      this.$router.push(`/games/${game.id}`)
     },
     cardHeight (index) {
       let height = 160
@@ -171,25 +148,25 @@ export default {
       return !isNaN(parseInt(this.votes[index]))
     },
     onVote (index) {
-      let voice = document.getElementById(`${this.idols[index].id}.voice`)
+      let voice = document.getElementById(`${this.games[index].id}.voice`)
       voice.play()
 
       const newVotes = parseInt(this.votes[index])
       if (isNaN(newVotes)) {
         return
       }
-      this.$store.dispatch('updateIdolData', {
-        id: this.idols[index].id,
-        numVotes: this.idols[index].numVotes + newVotes,
-        numTodayVotes: (this.idols[index].numTodayVotes || 0) + newVotes
+      this.$store.dispatch('updateGameData', {
+        id: this.games[index].id,
+        numVotes: this.games[index].numVotes + newVotes,
+        numTodayVotes: (this.games[index].numTodayVotes || 0) + newVotes
       })
       this.votes[index] = ''
     },
     onStartShuffling () {
-      this.$store.dispatch('startShufflingIdols')
+      this.$store.dispatch('startShufflingGames')
     },
     onStopShuffling () {
-      this.$store.dispatch('stopShufflingIdols')
+      this.$store.dispatch('stopShufflingGames')
     },
     onStartMonitoringTwip () {
       if (!this.twipOverlayUrl) return
@@ -239,7 +216,7 @@ export default {
           clearTimeout(this.twipConnectionChecker)
           this.twipConnectionChecker = null
           this.cardClass = 'success'
-          this.$store.dispatch('storeTwipOverlayUrl', { url: this.twipOverlayUrl })
+          this.$store.dispatch('storeTwipOverlayUrl', { url: this.twipOverlayUrl, gameAddMinimumAmount: this.gameAddMinimumAmount })
           this.$toasted.success('트윕 연동 성공: 자동 집계를 시작합니다.', {
             theme: 'primary',
             position: 'top-left',
@@ -261,10 +238,12 @@ export default {
               this.twipWebSocket.send('2')
             }, msg.pingInterval)
           } else if (msg.amount) {
-            const targetIdol = this.idols.find(idol => {
-              const name = ('@' + idol.name.slice(idol.name.indexOf(' ') + 1)).trim()
+            // wkkim: test
+            msg.comment = '라 라 라 @철권3 우오오오와'
+            const targetGame = this.games.find(game => {
+              const name = ('@' + game.name.slice(game.name.indexOf(' ') + 1)).trim()
               const nameFound = msg.nickname.indexOf(name) >= 0 || msg.comment.indexOf(name) >= 0
-              const nickFound = idol.nicknames ? idol.nicknames.find(nick => {
+              const nickFound = game.nicknames ? game.nicknames.find(nick => {
                 if (!nick.trim()) {
                   return false
                 }
@@ -272,11 +251,11 @@ export default {
               }) : false
               return nameFound || nickFound
             })
-            if (targetIdol) {
-              const index = this.idols.findIndex(idol => idol.id === targetIdol.id)
+            if (targetGame) {
+              const index = this.games.findIndex(game => game.id === targetGame.id)
               this.votes[index] = msg.amount
               this.onVote(index)
-              this.$toasted.show('성공: ' + msg.nickname + '님이 ' + targetIdol.name + '에게 ' + msg.amount + '표 추가', {
+              this.$toasted.show('성공: ' + msg.nickname + '님이 ' + targetGame.name + '에게 ' + msg.amount + '표 추가', {
                 theme: 'outline',
                 position: 'top-right',
                 duration: 5000,
@@ -288,17 +267,28 @@ export default {
                 }
               })
             } else {
-              this.$toasted.show(`실패: ${msg.nickname}님의 ${msg.amount}표 (${msg.comment})`, {
-                theme: 'primary',
-                position: 'top-right',
-                duration: null,
-                action: {
-                  text: '확인',
-                  onClick: (e, toastObject) => {
-                    toastObject.goAway(0)
-                  }
+              if (msg.amount >= Number(this.gameAddMinimumAmount)) {
+                const startPosition = msg.comment.indexOf('@') + 1
+                const newGameName = msg.comment.substring(startPosition, msg.comment.indexOf(' ', startPosition))
+                const gameData = {
+                  name: newGameName,
+                  imageUrl: '',
+                  numVotes: msg.amount
                 }
-              })
+                this.$store.dispatch('createGame', gameData)
+              } else {
+                this.$toasted.show(`실패: ${msg.nickname}님의 ${msg.amount}표 (${msg.comment})`, {
+                  theme: 'primary',
+                  position: 'top-right',
+                  duration: null,
+                  action: {
+                    text: '확인',
+                    onClick: (e, toastObject) => {
+                      toastObject.goAway(0)
+                    }
+                  }
+                })
+              }
             }
           }
         }
@@ -335,13 +325,13 @@ export default {
       }
     },
     onSortByTotal () {
-      this.$store.dispatch('sortIdolsByTotalVotes')
+      this.$store.dispatch('sortGamesByTotalVotes')
     },
     onSortByToday () {
-      this.$store.dispatch('sortIdolsByTodayVotes')
+      this.$store.dispatch('sortGamesByTodayVotes')
     },
-    getNicknamesString (idol) {
-      const nicknameString = idol.nicknames ? idol.nicknames.reduce((acc, nick) => {
+    getNicknamesString (game) {
+      const nicknameString = game.nicknames ? game.nicknames.reduce((acc, nick) => {
         if (typeof nick === 'string') {
           acc += nick.trim() + ', '
         }
@@ -350,8 +340,8 @@ export default {
       }, '') : ''
       return nicknameString.slice(0, nicknameString.length - 2)
     },
-    getLastName (idol) {
-      return idol.name.slice(idol.name.indexOf(' ') === -1 ? 0 : idol.name.indexOf(' '))
+    getLastName (game) {
+      return game.name.slice(game.name.indexOf(' ') === -1 ? 0 : game.name.indexOf(' '))
     }
   }
 }

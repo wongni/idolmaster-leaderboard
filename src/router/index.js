@@ -1,9 +1,9 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from '@/components/Home'
-import Idols from '@/components/Idol/Idols'
-import CreateIdol from '@/components/Idol/CreateIdol'
-import Idol from '@/components/Idol/Idol'
+import Games from '@/components/Game/Games'
+import CreateGame from '@/components/Game/CreateGame'
+import Game from '@/components/Game/Game'
 import Profile from '@/components/User/Profile'
 import Signup from '@/components/User/Signup'
 import Signin from '@/components/User/Signin'
@@ -19,21 +19,21 @@ export default new Router({
       component: Home
     },
     {
-      path: '/idols',
-      name: 'Idols',
-      component: Idols
+      path: '/games',
+      name: 'Games',
+      component: Games
     },
     {
-      path: '/new-idol',
-      name: 'CreateIdol',
-      component: CreateIdol,
+      path: '/new-game',
+      name: 'CreateGame',
+      component: CreateGame,
       beforeEnter: AuthGuard
     },
     {
-      path: '/idols/:id',
-      name: 'Idol',
+      path: '/games/:id',
+      name: 'Game',
       props: true,
-      component: Idol
+      component: Game
     },
     {
       path: '/profile',

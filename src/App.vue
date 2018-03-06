@@ -17,12 +17,12 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-toolbar dark class="primary">
+    <v-toolbar dark class="green">
       <span class="hidden-sm-and-up">
         <v-toolbar-side-icon @click.stop="sideNav = !sideNav"></v-toolbar-side-icon>
       </span>
       <v-toolbar-title>
-        <router-link to="/" tag="span" style="cursor: pointer">THE iDOLM@STER</router-link>
+        <router-link to="/" tag="span" style="cursor: pointer">매치업 게임 선정</router-link>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-xs-only">
@@ -53,13 +53,13 @@ export default {
     menuItem () {
       let menuItems = [
         // { icon: 'face', title: '가입', link: '/signup' },
-        { icon: 'group', title: '아이돌 리스트', link: '/idols' },
+        { icon: 'group', title: '게임 목록', link: '/games' },
         { icon: 'lock_open', title: '로그인', link: '/signin' }
       ]
       if (this.userIsAuthenticated) {
         menuItems = [
-          { icon: 'group', title: '아이돌 리스트', link: '/idols' },
-          { icon: 'person_add', title: '아이돌 영입', link: '/new-idol' }
+          { icon: 'videogame_asset', title: '게임 목록', link: '/games' },
+          { icon: 'add_to_queue', title: '게임 추가', link: '/new-game' }
           // { icon: 'face', title: '프로필', link: '/profile' }
         ]
       }

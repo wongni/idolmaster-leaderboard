@@ -7,39 +7,15 @@
       <v-container>
         <v-layout row wrap>
           <v-flex xs12>
-            <v-card-title>아이돌 편집하기</v-card-title>
+            <v-card-title>게임 수정하기</v-card-title>
           </v-flex>
         </v-layout>
         <v-layout row wrap>
           <v-flex xs5>
-            <v-card-text>
-              <v-layout row>
-                <v-flex>
-                  <img :src="editedImageUrl" width="100%">
-                </v-flex>
-              </v-layout>
-              <v-layout row>
-                <v-flex xs6 offset-xs3>
-                  <v-btn raised class="primary" @click="onPickImage">사진 바꾸기</v-btn>
-                  <input type="file" style="display: none" ref="fileInputForImage" accept="image/*" @change="onImagePicked">
-                </v-flex>
-              </v-layout>
-              <v-layout row>
-                <v-flex xs6 offset-xs3>
-                  <v-btn raised class="green" @click="onPickVoice">감사 인사 바꾸기</v-btn>
-                  <input type="file" style="display: none" ref="fileInputForVoice" accept="audio/*" @change="onVoicePicked">
-                </v-flex>
-              </v-layout>
-            </v-card-text>
           </v-flex>
-          <v-flex xs7>
+          <v-flex xs12>
             <v-card-text>
               <v-text-field name="name" label="이름" id="name" v-model="editedName" hide-details required></v-text-field>
-              <v-text-field name="nicks" label="별명 (예: 큿, 72)" id="name" v-model="editedNicks" hide-details></v-text-field>
-              <v-text-field name="description" label="각오" id="description" v-model="editedDescription" hide-details multi-line></v-text-field>
-              <v-text-field name="numVotes" label="득표수" id="numVotes" v-model="editedNumVotes"></v-text-field>
-              <h6>생일을 선택하세요</h6>
-              <v-date-picker v-model="editedBirthDate"></v-date-picker>
             </v-card-text>
           </v-flex>
         </v-layout>
@@ -59,9 +35,9 @@
 
 <script>
 export default {
-  props: ['idol'],
+  props: ['game'],
   data () {
-    let nicknamesString = this.idol.nicknames ? this.idol.nicknames.reduce((acc, nick) => {
+    let nicknamesString = this.game.nicknames ? this.game.nicknames.reduce((acc, nick) => {
       if (typeof nick === 'string') {
         acc += nick.trim() + ', '
       }
@@ -70,14 +46,14 @@ export default {
     }, '') : ''
     return {
       editDialog: false,
-      editedName: this.idol.name,
-      editedDescription: this.idol.description,
-      editedImageUrl: this.idol.imageUrl,
+      editedName: this.game.name,
+      editedDescription: this.game.description,
+      editedImageUrl: this.game.imageUrl,
       editedImage: null,
-      editedVoiceUrl: this.idol.voiceUrl,
+      editedVoiceUrl: this.game.voiceUrl,
       editedVoice: null,
-      editedNumVotes: this.idol.numVotes,
-      editedBirthDate: new Date(this.idol.birthDate),
+      editedNumVotes: this.game.numVotes,
+      editedBirthDate: new Date(this.game.birthDate),
       editedNicks: nicknamesString.slice(0, nicknamesString.length - 2)
     }
   },
@@ -89,14 +65,10 @@ export default {
       this.editDialog = false
       const nicks = this.editedNicks.split(',')
       const nicknames = nicks.map(nick => nick.trim())
-      this.$store.dispatch('updateIdolData', {
-        id: this.idol.id,
+      this.$store.dispatch('updateGameData', {
+        id: this.game.id,
         name: this.editedName,
-        description: this.editedDescription,
         image: this.editedImage,
-        voice: this.editedVoice,
-        numVotes: parseInt(this.editedNumVotes),
-        birthDate: (new Date(this.editedBirthDate) || new Date()).toISOString(),
         nicknames
       })
     },

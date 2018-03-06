@@ -6,53 +6,54 @@ Vue.use(Vuex)
 
 export const store = new Vuex.Store({
   state: {
-    loadedIdols: [],
+    loadedGames: [],
     user: null,
     loading: false,
     error: null,
     sortingOrder: 'by_total_votes',
     shufflingHandler: null,
-    twipOverlayUrl: null
+    twipOverlayUrl: null,
+    gameAddMinimumAmount: 0
   },
   mutations: {
-    setLoadedIdols (state, payload) {
-      state.loadedIdols = payload
+    setLoadedGames (state, payload) {
+      state.loadedGames = payload
     },
-    updateIdol (state, payload) {
-      const idol = state.loadedIdols.find(idol => idol.id === payload.id)
+    updateGame (state, payload) {
+      const game = state.loadedGames.find(game => game.id === payload.id)
       if (payload.name) {
-        idol.name = payload.name
+        game.name = payload.name
       }
       if (payload.japaneseName) {
-        idol.japaneseName = payload.japaneseName
+        game.japaneseName = payload.japaneseName
       }
       if (payload.description) {
-        idol.description = payload.description
+        game.description = payload.description
       }
       if (payload.birthDate) {
-        idol.birthDate = payload.birthDate
+        game.birthDate = payload.birthDate
       }
       if (payload.imageUrl) {
-        idol.imageUrl = payload.imageUrl
+        game.imageUrl = payload.imageUrl
       }
       if (payload.numVotes) {
-        idol.numVotes = payload.numVotes
+        game.numVotes = payload.numVotes
       }
     },
-    startShufflingIdols (state) {
+    startShufflingGames (state) {
       state.shufflingHandler = setInterval(() => {
         state.sortingOrder = 'by_total_votes'
         state.sortingOrder = 'random'
       }, 50)
     },
-    stopShufflingIdols (state) {
+    stopShufflingGames (state) {
       clearInterval(state.shufflingHandler)
       state.shufflingHandler = null
     },
-    sortIdolsByTotalVotes (state) {
+    sortGamesByTotalVotes (state) {
       state.sortingOrder = 'by_total_votes'
     },
-    sortIdolsByTodayVotes (state) {
+    sortGamesByTodayVotes (state) {
       state.sortingOrder = 'by_today_votes'
     },
     setUser (state, payload) {
@@ -69,16 +70,17 @@ export const store = new Vuex.Store({
     },
     storeTwipOverlayUrl (state, payload) {
       state.twipOverlayUrl = payload.url
+      state.gameAddMinimumAmount = payload.gameAddMinimumAmount
     }
   },
   actions: {
-    loadIdols ({ commit }) {
+    loadGames ({ commit }) {
       commit('setLoading', true)
-      firebase.database().ref('idols').on('value', data => {
-        const idols = []
+      firebase.database().ref('games').on('value', data => {
+        const games = []
         const obj = data.val()
         for (let key in obj) {
-          idols.push({
+          games.push({
             id: key,
             name: obj[key].name,
             imageUrl: obj[key].imageUrl,
@@ -94,38 +96,36 @@ export const store = new Vuex.Store({
             nicknames: obj[key].nicknames
           })
         }
-        commit('setLoadedIdols', idols)
+        commit('setLoadedGames', games)
         commit('setLoading', false)
       })
     },
-    createIdol ({ commit, getters }, payload) {
+    createGame ({ commit, getters }, payload) {
       commit('setLoading', true)
-      const idol = {
+      const game = {
         name: payload.name,
-        japaneseName: payload.japaneseName,
-        voiceActor: payload.voiceActor,
-        age: payload.age,
-        birthDate: payload.birthDate.toISOString(),
-        description: payload.description,
-        numVotes: payload.numVotes === '' ? 0 : parseInt(payload.numVotes),
+        imageUrl: payload.imageUrl,
+        numVotes: payload.numVotes || 0,
         creatorId: getters.user.id
       }
       let imageUrl
       let key
-      firebase.database().ref('idols').push(idol)
+      firebase.database().ref('games').push(game)
         .then(data => {
           key = data.key
           return key
         })
         .then(key => {
-          // const filename = payload.image.name
-          // const ext = filename.slice(filename.lastIndexOf('.') + 1)
-          const ext = 'image'
-          return firebase.storage().ref(`idols/${key}.${ext}`).put(payload.image)
+          if (payload.image) {
+            const ext = 'image'
+            return firebase.storage().ref(`games/${key}.${ext}`).put(payload.image)
+          }
         })
         .then(fileData => {
-          imageUrl = fileData.metadata.downloadURLs[0]
-          return firebase.database().ref('idols').child(key).update({ imageUrl })
+          if (fileData) {
+            imageUrl = fileData.metadata.downloadURLs[0]
+            return firebase.database().ref('games').child(key).update({ imageUrl })
+          }
         })
         .then(() => {
           commit('setLoading', false)
@@ -135,7 +135,7 @@ export const store = new Vuex.Store({
           commit('setLoading', false)
         })
     },
-    updateIdolData ({ commit }, payload) {
+    updateGameData ({ commit }, payload) {
       commit('setLoading', true)
       const updateObj = {}
       if (payload.name) {
@@ -157,15 +157,15 @@ export const store = new Vuex.Store({
         updateObj.nicknames = payload.nicknames
       }
       if (payload.image) {
-        firebase.storage().ref(`idols/${payload.id}.image`).put(payload.image)
+        firebase.storage().ref(`games/${payload.id}.image`).put(payload.image)
           .then(fileData => {
             const imageUrl = fileData.metadata.downloadURLs[0]
             updateObj.imageUrl = imageUrl
-            firebase.database().ref('idols').child(payload.id).update(updateObj)
+            firebase.database().ref('games').child(payload.id).update(updateObj)
               .then(() => {
                 commit('setLoading', false)
                 payload.imageUrl = imageUrl
-                commit('updateIdol', payload)
+                commit('updateGame', payload)
               })
               .catch(error => {
                 console.log(error)
@@ -174,15 +174,15 @@ export const store = new Vuex.Store({
           })
       }
       if (payload.voice) {
-        firebase.storage().ref(`idols/${payload.id}.voice`).put(payload.voice)
+        firebase.storage().ref(`games/${payload.id}.voice`).put(payload.voice)
           .then(fileData => {
             const voiceUrl = fileData.metadata.downloadURLs[0]
             updateObj.voiceUrl = voiceUrl
-            firebase.database().ref('idols').child(payload.id).update(updateObj)
+            firebase.database().ref('games').child(payload.id).update(updateObj)
               .then(() => {
                 commit('setLoading', false)
                 payload.voiceUrl = voiceUrl
-                commit('updateIdol', payload)
+                commit('updateGame', payload)
               })
               .catch(error => {
                 console.log(error)
@@ -191,10 +191,10 @@ export const store = new Vuex.Store({
           })
       }
       if (!payload.image && !payload.voice) {
-        firebase.database().ref('idols').child(payload.id).update(updateObj)
+        firebase.database().ref('games').child(payload.id).update(updateObj)
           .then(() => {
             commit('setLoading', false)
-            commit('updateIdol', payload)
+            commit('updateGame', payload)
           })
           .catch(error => {
             console.log(error)
@@ -202,9 +202,9 @@ export const store = new Vuex.Store({
           })
       }
     },
-    deleteIdol ({ commit }, payload) {
+    deleteGame ({ commit }, payload) {
       commit('setLoading', true)
-      firebase.database().ref('idols').child(payload.id).remove()
+      firebase.database().ref('games').child(payload.id).remove()
         .then(() => {
           commit('setLoading', false)
         })
@@ -213,17 +213,17 @@ export const store = new Vuex.Store({
           commit('setLoading', false)
         })
     },
-    startShufflingIdols ({ commit }) {
-      commit('startShufflingIdols')
+    startShufflingGames ({ commit }) {
+      commit('startShufflingGames')
     },
-    stopShufflingIdols ({ commit }) {
-      commit('stopShufflingIdols')
+    stopShufflingGames ({ commit }) {
+      commit('stopShufflingGames')
     },
-    sortIdolsByTotalVotes ({ commit }) {
-      commit('sortIdolsByTotalVotes')
+    sortGamesByTotalVotes ({ commit }) {
+      commit('sortGamesByTotalVotes')
     },
-    sortIdolsByTodayVotes ({ commit }) {
-      commit('sortIdolsByTodayVotes')
+    sortGamesByTodayVotes ({ commit }) {
+      commit('sortGamesByTodayVotes')
     },
     signUserUp ({ commit }, payload) {
       commit('setLoading', true)
@@ -233,7 +233,7 @@ export const store = new Vuex.Store({
           commit('setLoading', false)
           const newUser = {
             id: user.uid,
-            registeredIdols: []
+            registeredGames: []
           }
           commit('setUser', newUser)
         })
@@ -249,7 +249,7 @@ export const store = new Vuex.Store({
         .then(user => {
           const newUser = {
             id: user.uid,
-            registeredIdols: []
+            registeredGames: []
           }
           commit('setLoading', false)
           commit('setUser', newUser)
@@ -260,7 +260,7 @@ export const store = new Vuex.Store({
         })
     },
     autoSignIn ({ commit }, payload) {
-      commit('setUser', { id: payload.uid, registeredIdols: [] })
+      commit('setUser', { id: payload.uid, registeredGames: [] })
     },
     logout ({ commit }) {
       firebase.auth().signOut()
@@ -274,30 +274,30 @@ export const store = new Vuex.Store({
     }
   },
   getters: {
-    loadedIdols (state) {
+    loadedGames (state) {
       if (state.sortingOrder === 'by_total_votes') {
-        return state.loadedIdols.sort((idolA, idolB) => idolB.numVotes - idolA.numVotes)
+        return state.loadedGames.sort((gameA, gameB) => gameB.numVotes - gameA.numVotes)
       } else if (state.sortingOrder === 'by_today_votes') {
-        return state.loadedIdols.sort((idolA, idolB) => idolB.numTodayVotes - idolA.numTodayVotes)
+        return state.loadedGames.sort((gameA, gameB) => gameB.numTodayVotes - gameA.numTodayVotes)
       } else if (state.sortingOrder === 'random') {
-        for (let i = state.loadedIdols.length - 1; i > 0; i--) {
+        for (let i = state.loadedGames.length - 1; i > 0; i--) {
           let j = Math.floor(Math.random() * (i + 1))
-          const temp = state.loadedIdols[i]
-          state.loadedIdols[i] = state.loadedIdols[j]
-          state.loadedIdols[j] = temp
+          const temp = state.loadedGames[i]
+          state.loadedGames[i] = state.loadedGames[j]
+          state.loadedGames[j] = temp
         }
-        return state.loadedIdols
+        return state.loadedGames
       }
     },
-    featuredIdols (state, getters) {
-      return getters.loadedIdols.slice(0, 5)
+    featuredGames (state, getters) {
+      return getters.loadedGames.slice(0, 5)
     },
-    loadedIdol (state) {
-      return (idolId) => {
-        return state.loadedIdols.find(idol => idol.id === idolId)
+    loadedGame (state) {
+      return (gameId) => {
+        return state.loadedGames.find(game => game.id === gameId)
       }
     },
-    isShufflingIdols (state) {
+    isShufflingGames (state) {
       return state.shufflingHandler !== null
     },
     user (state) {
@@ -311,6 +311,9 @@ export const store = new Vuex.Store({
     },
     twipOverlayUrl (state) {
       return state.twipOverlayUrl
+    },
+    gameAddMinimumAmount (state) {
+      return state.gameAddMinimumAmount
     }
   }
 })

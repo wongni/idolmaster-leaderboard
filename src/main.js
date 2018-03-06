@@ -8,9 +8,9 @@ import router from './router'
 import { store } from './store'
 import DateFilter from './filters/date'
 import AlertCmp from './components/Shared/Alert.vue'
-import EditIdolDetailsDialogCmp from './components/Idol/Edit/EditIdolDetailsDialog.vue'
-import DeleteIdolConfirmDialogCmp from './components/Idol/Edit/DeleteIdolConfirmDialog.vue'
-import ResetTodayVotesConfirmDialogCmp from './components/Idol/Popup/ResetTodayVotesConfirmDialog.vue'
+import EditGameDetailsDialogCmp from './components/Game/Edit/EditGameDetailsDialog.vue'
+import DeleteGameConfirmDialogCmp from './components/Game/Edit/DeleteGameConfirmDialog.vue'
+import ResetTodayVotesConfirmDialogCmp from './components/Game/Popup/ResetTodayVotesConfirmDialog.vue'
 
 Vue.use(Vuetify)
 Vue.use(VueCurrencyFilter, { thousandsSeparator: ',' })
@@ -19,8 +19,8 @@ Vue.config.productionTip = false
 
 Vue.filter('date', DateFilter)
 Vue.component('app-alert', AlertCmp)
-Vue.component('app-edit-idol-details-dialog', EditIdolDetailsDialogCmp)
-Vue.component('app-delete-idol-confirm-dialog', DeleteIdolConfirmDialogCmp)
+Vue.component('app-edit-game-details-dialog', EditGameDetailsDialogCmp)
+Vue.component('app-delete-game-confirm-dialog', DeleteGameConfirmDialogCmp)
 Vue.component('app-reset-today-votes-confirm-dialog', ResetTodayVotesConfirmDialogCmp)
 
 /* eslint-disable no-new */
@@ -44,6 +44,6 @@ new Vue({
         this.$store.dispatch('logout')
       }
     })
-    this.$store.dispatch('loadIdols')
+    this.$store.dispatch('loadGames')
   }
 })

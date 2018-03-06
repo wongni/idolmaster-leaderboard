@@ -10,12 +10,12 @@
         <v-card>
           <v-card-title>
             <h4 class="primary--text">
-              {{ idol.name }}
+              {{ game.name }}
             </h4>
             <template v-if="userIsCreator">
               <v-spacer></v-spacer>
-              <app-edit-idol-details-dialog :idol="idol"></app-edit-idol-details-dialog>
-              <app-delete-idol-confirm-dialog :idol="idol"></app-delete-idol-confirm-dialog>
+              <app-edit-game-details-dialog :game="game"></app-edit-game-details-dialog>
+              <app-delete-game-confirm-dialog :game="game"></app-delete-game-confirm-dialog>
             </template>
           </v-card-title>
           <v-card-actions v-if="userIsCreator">
@@ -32,15 +32,10 @@
             </v-container>
           </v-card-actions>
           <v-card-media>
-            <img :src="idol.imageUrl">
+            <img :src="game.imageUrl">
           </v-card-media>
           <v-card-text>
-            <div class="primary--text mb-2">득표수: {{ idol.numVotes | currency }} 표</div>
-            <div class="info--text mb-2">성우: {{ idol.voiceActor }}</div>
-            <div class="mb-2">나이: {{ idol.age }}</div>
-            <div class="mb-2">별명: {{ this.getNicknamesString() }}</div>
-            <div class="mb-2">생일: {{ idol.birthDate | date }}</div>
-            <div class="mb-2">각오: {{ idol.description }}</div>
+            <div class="primary--text mb-2">득표수: {{ game.numVotes | currency }} 표</div>
           </v-card-text>
         </v-card>
       </v-flex>
@@ -62,8 +57,8 @@ export default {
   },
   props: ['id'],
   computed: {
-    idol () {
-      return this.$store.getters.loadedIdol(this.id)
+    game () {
+      return this.$store.getters.loadedGame(this.id)
     },
     userIsAuthenticated () {
       return this.$store.getters.user !== null && this.$store.getters.user !== undefined
@@ -72,7 +67,7 @@ export default {
       if (!this.userIsAuthenticated) {
         return false
       }
-      return this.$store.getters.user.id === this.idol.creatorId
+      return this.$store.getters.user.id === this.game.creatorId
     },
     loading () {
       return this.$store.getters.loading
@@ -87,14 +82,14 @@ export default {
       if (isNaN(newVotes)) {
         return
       }
-      this.$store.dispatch('updateIdolData', {
-        id: this.idol.id,
-        numVotes: this.idol.numVotes + newVotes
+      this.$store.dispatch('updateGameData', {
+        id: this.game.id,
+        numVotes: this.game.numVotes + newVotes
       })
-      this.$router.push('/idols')
+      this.$router.push('/games')
     },
     getNicknamesString () {
-      const nicknameString = this.idol.nicknames ? this.idol.nicknames.reduce((acc, nick) => {
+      const nicknameString = this.game.nicknames ? this.game.nicknames.reduce((acc, nick) => {
         if (typeof nick === 'string') {
           acc += nick.trim() + ', '
         }
