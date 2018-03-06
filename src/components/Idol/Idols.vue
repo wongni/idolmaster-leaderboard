@@ -230,7 +230,7 @@ export default {
         })
       }
       this.twipWebSocket.onclose = () => {
-        this.onStopMonitoringTwip()
+        this.onStartMonitoringTwip()
       }
       this.twipWebSocket.onopen = () => {
       }
